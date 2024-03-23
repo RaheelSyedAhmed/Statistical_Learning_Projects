@@ -1,0 +1,512 @@
+optimal_knn <- knn(train_X, grid, train_y, k=1, prob=TRUE)
+optimal_probs <- attr(optimal_knn, "prob")
+optimal_probs
+data.frame(optimal_probs)
+data.frame(optimal_probs)[1000:2000,]
+optimal_knn <- knn(train_X, grid, train_y, k=55, prob=TRUE)
+optimal_probs <- attr(optimal_knn, "prob")
+data.frame(optimal_probs)[1000:2000,]
+admit_data <- read.csv("admission.csv")
+observation_count <- nrow(admit_data)
+admit_data[,1:2] <- scale(admit_data[,1:2])
+test_data <- rbind(
+tail(split(admit_data, admit_data$Group)$`1`, 5),
+tail(split(admit_data, admit_data$Group)$`2`, 5),
+tail(split(admit_data, admit_data$Group)$`3`, 5)
+)
+train_data <- admit_data[-as.numeric(rownames(test_data)), ]
+train_X <- train_data[,1:2]
+train_y <- train_data[,3]
+test_X <- test_data[, 1:2]
+test_y <- test_data[, 3]
+plot(admit_data$GPA, admit_data$Group)
+#GPA appears to correlate with acceptance
+plot(admit_data$GMAT, admit_data$Group)
+#Part e
+library(class)
+#Test out multiple knn classifiers
+ks <- c(seq(1,30, by=1), seq(35,150, by=5))
+nks <- length(ks)
+err_train <- numeric(length=nks)
+err_test <- numeric(length=nks)
+names(err_train) <- names(err_test) <- ks
+for(i in seq(along=ks)){
+knn_train <- knn(train_X, train_X, train_y, k=ks[i], prob=TRUE)
+cfm <- table(knn_train, train_y)
+train_acc <- (cfm[1,1] + cfm[2,2] + cfm[3,3]) / sum(cfm)
+knn_test <- knn(train_X, test_X, train_y, k=ks[i], prob=TRUE)
+cfm <- table(knn_test, test_y)
+test_acc <- (cfm[1,1] + cfm[2,2] + cfm[3,3]) / sum(cfm)
+err_train[i] <- 1 - train_acc
+err_test[i] <- 1 - test_acc
+}
+plot(ks, err_train, xlab="K", ylab="Error rate", type = "b", col="green", pch=20)
+lines(ks, err_test, type="b", col="red", pch=20)
+optim_find <- data.frame(ks, err_train, err_test)
+optim_find[optim_find$err_test == min(optim_find$err_test), ]
+n_grid <- 50
+gpa_grid <- seq(f=min(train_X$GPA), t=max(train_X$GPA), l=n_grid)
+gmat_grid <- seq(f=min(train_X$GMAT), t=max(train_X$GMAT), l=n_grid)
+grid <- expand.grid(gpa_grid, gmat_grid)
+optimal_knn <- knn(train_X, grid, train_y, k=55, prob=TRUE)
+?knn
+optimal_knn <- knn(train_X, grid, train_y, k=55, prob=TRUE)
+optimal_probs <- attr(optimal_knn, "prob")
+View(optimal_probs)
+View(data.frame(optimal_probs))
+plot(train_X, col= ifelse(train_y == 1, "green", ifelse(train_y == 2, "red", "blue")))
+?contour
+contour(gpa_grid, gmat_grid, prob, add=T)
+contour(gpa_grid, gmat_grid, optimal_probs, add=T)
+plot(train_X, col= ifelse(train_y == 1, "green", ifelse(train_y == 2, "red", "blue")))
+contour(gpa_grid, gmat_grid, optimal_probs, add=T)
+contour(gpa_grid, gmat_grid, optimal_probs, levels = (0.333), add=T)
+optimal_probs <- matrix(optimal_probs, n_grid, n_grid)
+plot(train_X, col= ifelse(train_y == 1, "green", ifelse(train_y == 2, "red", "blue")))
+contour(gpa_grid, gmat_grid, optimal_probs, levels = (0.333), add=T)
+all_boundary_subjects <- which(optimal_probs <= 0.55)
+all_boundary_subjects <- which(optimal_probs <= 0.37)
+boundary_points <- train_data[all_boundary_subjects,]
+points(boundary_points$GPA, boundary_points$GMAT)
+View(boundary_points)
+admit_data <- read.csv("admission.csv")
+observation_count <- nrow(admit_data)
+admit_data[,1:2] <- scale(admit_data[,1:2])
+test_data <- rbind(
+tail(split(admit_data, admit_data$Group)$`1`, 5),
+tail(split(admit_data, admit_data$Group)$`2`, 5),
+tail(split(admit_data, admit_data$Group)$`3`, 5)
+)
+train_data <- admit_data[-as.numeric(rownames(test_data)), ]
+train_X <- train_data[,1:2]
+train_y <- train_data[,3]
+test_X <- test_data[, 1:2]
+test_y <- test_data[, 3]
+plot(admit_data$GPA, admit_data$Group)
+#GPA appears to correlate with acceptance
+plot(admit_data$GMAT, admit_data$Group)
+#Part e
+library(class)
+#Test out multiple knn classifiers
+ks <- c(seq(1,30, by=1), seq(35,150, by=5))
+nks <- length(ks)
+err_train <- numeric(length=nks)
+err_test <- numeric(length=nks)
+names(err_train) <- names(err_test) <- ks
+for(i in seq(along=ks)){
+knn_train <- knn(train_X, train_X, train_y, k=ks[i], prob=TRUE)
+cfm <- table(knn_train, train_y)
+train_acc <- (cfm[1,1] + cfm[2,2] + cfm[3,3]) / sum(cfm)
+knn_test <- knn(train_X, test_X, train_y, k=ks[i], prob=TRUE)
+cfm <- table(knn_test, test_y)
+test_acc <- (cfm[1,1] + cfm[2,2] + cfm[3,3]) / sum(cfm)
+err_train[i] <- 1 - train_acc
+err_test[i] <- 1 - test_acc
+}
+plot(ks, err_train, xlab="K", ylab="Error rate", type = "b", col="green", pch=20)
+lines(ks, err_test, type="b", col="red", pch=20)
+plot(ks, err_train, xlab="K", ylab="Error rate", type = "b", col="green", pch=20, ylim=c(0,1))
+lines(ks, err_test, type="b", col="red", pch=20)
+optim_find <- data.frame(ks, err_train, err_test)
+optim_find[optim_find$err_test == min(optim_find$err_test), ]
+n_grid <- 50
+gpa_grid <- seq(f=min(train_X$GPA), t=max(train_X$GPA), l=n_grid)
+gmat_grid <- seq(f=min(train_X$GMAT), t=max(train_X$GMAT), l=n_grid)
+grid <- expand.grid(gpa_grid, gmat_grid)
+optimal_knn <- knn(train_X, grid, train_y, k=55, prob=TRUE)
+optimal_probs <- attr(optimal_knn, "prob")
+optimal_probs <- matrix(optimal_probs, n_grid, n_grid)
+View(optimal_probs)
+all_boundary_subjects <- which(optimal_probs <= 0.37)
+boundary_points <- optimal_probs[all_boundary_subjects,]
+all_boundary_subjects <- which(optimal_probs <= 0.37)
+View(all_boundary_subjects)
+optimal_knn <- knn(train_X, grid, train_y, k=55, prob=TRUE)
+optimal_probs <- attr(optimal_knn, "prob")
+all_boundary_subjects <- which(optimal_probs <= 0.37)
+boundary_points <- optimal_probs[all_boundary_subjects,]
+View(optimal_probs)
+View(data.frame(optimal_probs))
+View(grid)
+boundary_points <- grid[all_boundary_subjects,]
+View(boundary_points)
+points(boundary_points$GPA, boundary_points$GMAT)
+plot(train_X, col= ifelse(train_y == 1, "green", ifelse(train_y == 2, "red", "blue")))
+points(boundary_points$GPA, boundary_points$GMAT)
+View(boundary_points)
+names(boundary_points) <- c("GPA", "GMAT")
+plot(train_X, col= ifelse(train_y == 1, "green", ifelse(train_y == 2, "red", "blue")))
+points(boundary_points$GPA, boundary_points$GMAT)
+abline(boundary_points$GMAT ~ boundary_points$GPA)
+plot(train_X, col= ifelse(train_y == 1, "green", ifelse(train_y == 2, "red", "blue")))
+abline(boundary_points$GMAT ~ boundary_points$GPA)
+plot(train_X, col= ifelse(train_y == 1, "green", ifelse(train_y == 2, "red", "blue")))
+abline(lm(boundary_points$GMAT ~ boundary_points$GPA))
+# Read in prostate cancer data
+pc_data <- read.csv("prostate_cancer.csv")
+# Eliminate subject number feature
+pc_data <- pc_data[,-1]
+# Convert gleason and treat vesinv as qualitative variables
+pc_data$vesinv <- factor(pc_data$vesinv, order=T, levels = c(0, 1))
+pc_data$gleason <- factor(pc_data$gleason, order=T, levels = c(6, 7, 8))
+# Part a
+# Preliminary findings
+nrow(pc_data)
+summary(pc_data$vesinv) # There's more people without seminal vesicle invasion than with
+summary(pc_data$gleason) # There's a mix of people with varying gleason scores.
+hist(pc_data$age) # Most people with pancreatic cancer information are older (50-70+)
+hist(pc_data$weight)
+cor(pc_data[,unlist(lapply(pc_data, is.numeric))])
+# Part b
+# Examine distribution of psa to determine if it's an appropriate response variable.
+hist(pc_data[, 1])
+# Since psa is not, transform it with a natural log transformation and check again.
+pc_data[, 1] <- log(pc_data[, 1])
+hist(pc_data[, 1])
+# Part c - For each predictor, fit a simple linear regression model to predict the response
+summary(glm(psa ~ cancervol, data = pc_data))$coefficients  #Significance found
+summary(glm(psa ~ weight, data = pc_data))$coefficients
+summary(glm(psa ~ age, data = pc_data))$coefficients
+summary(glm(psa ~ benpros, data = pc_data))$coefficients
+summary(lm(psa ~ vesinv, data = pc_data))$coefficients      #Significance found
+summary(glm(psa ~ capspen, data = pc_data))$coefficients    #Significance found
+summary(lm(psa ~ gleason, data = pc_data))$coefficients     #Linear significance found, no quadratic significance
+plot(pc_data$cancervol, pc_data$psa)
+plot(pc_data$vesinv, pc_data$psa)
+plot(pc_data$capspen, pc_data$psa)
+plot(pc_data$gleason, pc_data$psa)
+# Part d
+summary(glm(psa ~ ., data = pc_data))
+# Part d
+summary(lm(psa ~ ., data = pc_data))
+g
+# Part d
+summary(glm(psa ~ ., data = pc_data))
+# I excluded capspen as it did not seem statistically significant when other predictors were involved
+# I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for
+summary(glm(psa ~ cancervol + vesinv + gleason, data = pc_data))
+View(pc_data)
+mean(pc_data$cancervol)
+levels(pc_data$vesinv)
+sort(table(pc_data$vesinv))
+names(sort(table(pc_data$vesinv)))
+names(sort(table(pc_data$vesinv)))[-1]
+names(sort(table(pc_data$gleason)))[-1]
+names(sort(table(pc_data$gleason)))[c(-1,-2)]
+sort(table(pc_data$gleason))
+vesinv_mode <- names(sort(table(pc_data$vesinv)))[-1]
+gleason_mode <- names(sort(table(pc_data$gleason)))[c(-1,-2)]
+pc_data[pc_data$vesinv == vesinv_mode]
+pc_data[pc_data$vesinv == vesinv_mode,]
+# I excluded capspen as it did not seem statistically significant when other predictors were involved
+# I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for
+final_model <- glm(psa ~ cancervol + vesinv + gleason, data = pc_data)
+summary(final_model)
+data.frame(c(mean(pc_data$cancervol), names(sort(table(pc_data$vesinv)))[-1], names(sort(table(pc_data$gleason)))[c(-1,-2)]))
+data.frame(mean(pc_data$cancervol), names(sort(table(pc_data$vesinv)))[-1], names(sort(table(pc_data$gleason)))[c(-1,-2)])
+sample_patient <- data.frame(mean(pc_data$cancervol), names(sort(table(pc_data$vesinv)))[-1], names(sort(table(pc_data$gleason)))[c(-1,-2)])
+summary(final_model)
+sample_patient <- data.frame(mean(pc_data$cancervol), names(sort(table(pc_data$vesinv)))[-1], names(sort(table(pc_data$gleason)))[c(-1,-2)])
+colnames(sample_patient) <- c("cancervol", "vesinv", "gleason")
+View(sample_patient)
+predict(final_model, sample_patient)
+summary(final_model)
+colnames(pc_data)
+# Part a
+# Preliminary findings
+nrow(pc_data)
+hist(pc_data$age) # Most people with pancreatic cancer information are older (50-70+)
+cor(pc_data[,unlist(lapply(pc_data, is.numeric))])
+summary(glm(psa ~ capspen, data = pc_data))$coefficients    #Significance found
+# Part d
+summary(glm(psa ~ ., data = pc_data))
+# Part e
+# I excluded capspen as it did not seem statistically significant when other predictors were involved
+# I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for
+final_model <- glm(psa ~ cancervol + capspen + vesinv + gleason, data = pc_data)
+summary(final_model)
+plot(pc_data$cancervol, pc_data$psa)
+plot(pc_data$vesinv, pc_data$psa)
+plot(pc_data$capspen, pc_data$psa)
+plot(pc_data$gleason, pc_data$psa)
+par(mfrow=c(2,2))
+plot(pc_data$cancervol, pc_data$psa, xlab = "cancervol", ylab="psa")
+plot(pc_data$vesinv, pc_data$psa)
+plot(pc_data$capspen, pc_data$psa)
+plot(pc_data$gleason, pc_data$psa)
+plot(pc_data$cancervol, pc_data$psa, xlab = "cancervol", ylab="psa")
+plot(pc_data$vesinv, pc_data$psa, xlab = "vesinv", ylab="psa")
+plot(pc_data$capspen, pc_data$psa, xlab = "capspen", ylab="psa")
+plot(pc_data$gleason, pc_data$psa, xlab = "gleason", ylab="psa")
+# Part d
+summary(glm(psa ~ ., data = pc_data))
+# Part e
+# I excluded capspen as it did not seem statistically significant when other predictors were involved
+# I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for
+final_model <- glm(psa ~ cancervol + vesinv + gleason, data = pc_data)
+summary(final_model)
+2.29788 + 0.55603*6
+2.29788 + 0.55603*7
+2.29788 + 0.55603*8
+View(pc_data)
+2.29788 + 0.55603*1
+2.29788 + 0.55603*2
+2.29788 + 0.55603*0 + 0.44260*1
+2.29788 + 0.55603*1 + 0.44260*1
+2.29788 + 0.55603*2 + 0.44260*1
+#Part g
+sample_patient <- data.frame(mean(pc_data$cancervol), names(sort(table(pc_data$vesinv)))[-1], names(sort(table(pc_data$gleason)))[c(-1,-2)])
+colnames(sample_patient) <- c("cancervol", "vesinv", "gleason")
+predict(final_model, sample_patient)
+mean(pc_data$cancervol)
+2.85391 + 0.05875(6.9987)
+2.85391 + 0.05875*(6.9987)
+summary(final_model)
+predict(final_model, sample_patient)
+sample_patient
+2.29788 + 0.05875 * 6.99862
+predict(final_model, sample_patient)
+#Part g
+sample_patient <- data.frame(mean(pc_data$cancervol), names(sort(table(pc_data$vesinv)))[-1], names(sort(table(pc_data$gleason)))[c(1)])
+colnames(sample_patient) <- c("cancervol", "vesinv", "gleason")
+sample_patient
+predict(final_model, sample_patient)
+#Part g
+sample_patient <- data.frame(mean(pc_data$cancervol), names(sort(table(pc_data$vesinv)))[-1], names(sort(table(pc_data$gleason)))[c(-1,-2)])
+#Part g
+sample_patient <- data.frame(mean(pc_data$cancervol), names(sort(table(pc_data$vesinv)))[1], names(sort(table(pc_data$gleason)))[c(-1,-2)])
+sample_patient
+colnames(sample_patient) <- c("cancervol", "vesinv", "gleason")
+predict(final_model, sample_patient)
+2.370213 - 2.996144
+# Part e
+# I excluded capspen as it did not seem statistically significant when other predictors were involved
+# I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for
+final_model <- lm(psa ~ cancervol + vesinv + gleason, data = pc_data)
+summary(final_model)
+#Part g
+sample_patient <- data.frame(mean(pc_data$cancervol), names(sort(table(pc_data$vesinv)))[1], names(sort(table(pc_data$gleason)))[c(-1,-2)])
+colnames(sample_patient) <- c("cancervol", "vesinv", "gleason")
+sample_patient
+predict(final_model, sample_patient)
+final_model$coefficients
+# Read in prostate cancer data
+pc_data <- read.csv("prostate_cancer.csv")
+# Eliminate subject number feature
+pc_data <- pc_data[,-1]
+# Convert gleason and treat vesinv as qualitative variables
+pc_data$vesinv <- factor(pc_data$vesinv, order=F, levels = c(0, 1))
+pc_data$gleason <- factor(pc_data$gleason, order=F, levels = c(6, 7, 8))
+# Part a
+# Preliminary findings
+nrow(pc_data)
+colnames(pc_data)
+summary(pc_data$vesinv) # There's more people without seminal vesicle invasion than with
+summary(pc_data$gleason) # There's a mix of people with varying gleason scores.
+hist(pc_data$age) # Most people with pancreatic cancer information are older (50-70+)
+cor(pc_data[,unlist(lapply(pc_data, is.numeric))])
+# Part b
+# Examine distribution of psa to determine if it's an appropriate response variable.
+hist(pc_data[, 1])
+# Since psa is not, transform it with a natural log transformation and check again.
+pc_data[, 1] <- log(pc_data[, 1])
+hist(pc_data[, 1])
+# Part c - For each predictor, fit a simple linear regression model to predict the response
+summary(glm(psa ~ cancervol, data = pc_data))$coefficients  #Significance found
+summary(glm(psa ~ weight, data = pc_data))$coefficients
+summary(glm(psa ~ age, data = pc_data))$coefficients
+summary(glm(psa ~ benpros, data = pc_data))$coefficients
+summary(lm(psa ~ vesinv, data = pc_data))$coefficients      #Significance found
+summary(glm(psa ~ capspen, data = pc_data))$coefficients    #Significance found
+summary(lm(psa ~ gleason, data = pc_data))$coefficients     #Linear significance found, no quadratic significance
+par(mfrow=c(2,2))
+plot(pc_data$cancervol, pc_data$psa, xlab = "cancervol", ylab="psa")
+plot(pc_data$vesinv, pc_data$psa, xlab = "vesinv", ylab="psa")
+plot(pc_data$capspen, pc_data$psa, xlab = "capspen", ylab="psa")
+plot(pc_data$gleason, pc_data$psa, xlab = "gleason", ylab="psa")
+# Part d
+summary(glm(psa ~ ., data = pc_data))
+# Part e
+# I excluded capspen as it did not seem statistically significant when other predictors were involved
+# I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for
+final_model <- lm(psa ~ cancervol + vesinv + gleason, data = pc_data)
+summary(final_model)
+# Part e
+# I excluded capspen as it did not seem statistically significant when other predictors were involved
+# I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for
+final_model <- lm(psa ~ cancervol + vesinv + gleason -gleason7, data = pc_data)
+# Part e
+# I excluded capspen as it did not seem statistically significant when other predictors were involved
+# I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for
+final_model <- lm(psa ~ cancervol + vesinv + gleason, data = pc_data)
+summary(final_model)
+final_model$coefficients
+#Part g
+sample_patient <- data.frame(mean(pc_data$cancervol), names(sort(table(pc_data$vesinv)))[-1], names(sort(table(pc_data$gleason)))[c(-1,-2)])
+colnames(sample_patient) <- c("cancervol", "vesinv", "gleason")
+sample_patient
+predict(final_model, sample_patient)
+# Part e
+# I excluded capspen as it did not seem statistically significant when other predictors were involved
+# I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for
+final_model <- lm(psa ~ cancervol + vesinv + gleason, data = pc_data)
+summary(final_model)
+final_model$coefficients
+# Part e
+# I excluded capspen as it did not seem statistically significant when other predictors were involved
+# I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for
+final_model <- lm(psa ~ cancervol + vesinv + (gleason==8), data = pc_data)
+summary(final_model)
+final_model$coefficients
+# Part e
+# I excluded capspen as it did not seem statistically significant when other predictors were involved
+# I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for
+final_model <- lm(psa ~ cancervol + vesinv + (gleason==1), data = pc_data)
+summary(final_model)
+# Part e
+# I excluded capspen as it did not seem statistically significant when other predictors were involved
+# I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for
+final_model <- lm(psa ~ cancervol + vesinv + (gleason==7), data = pc_data)
+summary(final_model)
+# Part e
+# I excluded capspen as it did not seem statistically significant when other predictors were involved
+# I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for
+final_model <- lm(psa ~ cancervol + vesinv + gleason, data = pc_data)
+summary(final_model)
+final_model$coefficients
+#Part g
+sample_patient <- data.frame(mean(pc_data$cancervol), names(sort(table(pc_data$vesinv)))[-1], names(sort(table(pc_data$gleason)))[c(-1,-2)])
+colnames(sample_patient) <- c("cancervol", "vesinv", "gleason")
+predict(final_model, sample_patient)
+View(sample_patient)
+1.60467 + 0.05875*6.998682 + 0.6259312 + 0.78634
+1.60467 + 0.05875*6.998682
+1.60467 + 0.05875*6.998682 + 0.354
+1.6046706 + 0.354399
+1.6046706 + 0.7863444
+1.6046706 + 0.354399 + 0.6259312
+1.6046706 + 0.7863444 + 0.6259312
+1.6046706 + 0.6259312
+1.95907 + 0.05875*(6.9987)
+1.95907 + 0.05875*(6.9987)
+admit_data <- read.csv("admission.csv")
+hist(admit_data$GMAT)
+hist(admit_data$GPA)
+par(mfrow=c(1,1))
+hist(admit_data$GPA)
+hist(admit_data$GMAT)
+#Display frequency of response
+hist(admit_data$Group)
+#Display frequency of response
+summary(admit_data$Group)
+# Display frequency of GPA and GMAT data
+par(mfrow=c(1,2))
+hist(admit_data$GPA)
+hist(admit_data$GMAT)
+# Read in admission data
+admit_data <- read.csv("admission.csv")
+# Appropriately standardize the GPA and GMAT scores
+admit_data[,1:2] <- scale(admit_data[,1:2])
+# Form test data from the last 5 observations in each group
+test_data <- rbind(
+tail(split(admit_data, admit_data$Group)$`1`, 5),
+tail(split(admit_data, admit_data$Group)$`2`, 5),
+tail(split(admit_data, admit_data$Group)$`3`, 5)
+)
+# Take the train data as the rest of the observations
+train_data <- admit_data[-as.numeric(rownames(test_data)), ]
+# Partition features and responses
+train_X <- train_data[,1:2]
+train_y <- train_data[,3]
+test_X <- test_data[, 1:2]
+test_y <- test_data[, 3]
+# Count the number of observations
+observation_count <- nrow(admit_data)
+# Display frequency of GPA and GMAT data
+par(mfrow=c(1,2))
+hist(admit_data$GPA)
+hist(admit_data$GMAT)
+#Display frequency of response
+hist(admit_data$Group)
+plot(admit_data$GPA, admit_data$Group)
+par(mfrow=c(1,1))
+plot(admit_data$GPA, admit_data$Group)
+#GPA appears to correlate with acceptance
+plot(admit_data$GMAT, admit_data$Group)
+#Part b
+library(MASS)
+?lda.fit
+??lda.fit
+?lda
+admit_lda <- lda(Group ~ GPA + GMAT, data=admit_data, subset=train_data)
+admit_lda <- lda(Group ~ GPA + GMAT, data=admit_data)
+View(admit_lda)
+admit_lda <- lda(Group ~ GPA + GMAT, data=train_data)
+View(admit_lda)
+admit_lda <- lda(Group ~ GPA + GMAT, data=admit_data, subset=train_data)
+train_data
+sample(1:150,75)
+rownames(train_data)
+admit_lda <- lda(Group ~ GPA + GMAT, data=admit_data, subset=rownames(train_data))
+View(admit_lda)
+View(admit_lda)
+View(admit_lda)
+admit_lda$coefficients
+lda(Group ~ GPA + GMAT, data=admit_data, subset=rownames(train_data))
+coef(admit_lda)
+# Form grid for future decision boundary making
+n_grid <- 50
+gpa_grid <- seq(f=min(train_X$GPA), t=max(train_X$GPA), l=n_grid)
+gmat_grid <- seq(f=min(train_X$GMAT), t=max(train_X$GMAT), l=n_grid)
+grid <- expand.grid(gpa_grid, gmat_grid)
+admit_lda <- lda(Group ~ GPA + GMAT, data=admit_data, subset=rownames(train_data))
+coef(admit_lda)
+View(grid)
+colnames(grid) <- c("GPA", "GMAT")
+View(grid)
+#Part e
+library(class)
+#Test out multiple knn classifiers
+ks <- c(seq(1,30, by=1), seq(35,150, by=5))
+nks <- length(ks)
+err_train <- numeric(length=nks)
+err_test <- numeric(length=nks)
+names(err_train) <- names(err_test) <- ks
+for(i in seq(along=ks)){
+knn_train <- knn(train_X, train_X, train_y, k=ks[i], prob=TRUE)
+cfm <- table(knn_train, train_y)
+train_acc <- (cfm[1,1] + cfm[2,2] + cfm[3,3]) / sum(cfm)
+knn_test <- knn(train_X, test_X, train_y, k=ks[i], prob=TRUE)
+cfm <- table(knn_test, test_y)
+test_acc <- (cfm[1,1] + cfm[2,2] + cfm[3,3]) / sum(cfm)
+err_train[i] <- 1 - train_acc
+err_test[i] <- 1 - test_acc
+}
+plot(ks, err_train, xlab="K", ylab="Error rate", type = "b", col="green", pch=20, ylim=c(0,1))
+lines(ks, err_test, type="b", col="red", pch=20)
+optim_find <- data.frame(ks, err_train, err_test)
+optim_find[optim_find$err_test == min(optim_find$err_test), ]
+optimal_knn <- knn(train_X, grid, train_y, k=55, prob=TRUE)
+optimal_probs <- attr(optimal_knn, "prob")
+optimal_probs <- matrix(optimal_probs, n_grid, n_grid)
+all_boundary_subjects <- which(optimal_probs <= 0.37)
+boundary_points <- grid[all_boundary_subjects,]
+View(boundary_points)
+plot(train_X, col= ifelse(train_y == 1, "green", ifelse(train_y == 2, "red", "blue")))
+abline(lm(boundary_points$GMAT ~ boundary_points$GPA))
+predict_lda_grid <- predict(admit_lda, grid)
+View(predict_lda_grid)
+head(predict_lda_grid$posterior)
+lda_probs <- matrix(predict_lda_grid, nrow=n_grid, ncol=n_grid)
+View(lda_probs)
+admit_lda <- lda(Group ~ GPA + GMAT, data=admit_data, subset=rownames(train_data))
+coef(admit_lda)
+predict_lda_grid <- predict(admit_lda, grid)
+lda_probs <- matrix(predict_lda_grid$posterior, nrow=n_grid, ncol=n_grid)
+View(predict_lda_grid)
+# Read in admission data
+admit_data <- read.csv("admission.csv")
+# Appropriately standardize the GPA and GMAT scores
+admit_data[,1:2] <- scale(admit_data[,1:2])
+# Read in admission data
+admit_data <- read.csv("admission.csv")

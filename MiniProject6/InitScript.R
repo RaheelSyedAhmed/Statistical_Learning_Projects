@@ -1,0 +1,5 @@
+library(reticulate)
+use_virtualenv(virtualenv="r-reticulate", required=TRUE)
+library(keras)
+mnist <- dataset_mnist()
+str(mnist)

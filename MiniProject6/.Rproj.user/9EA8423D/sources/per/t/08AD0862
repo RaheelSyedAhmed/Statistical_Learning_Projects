@@ -1,0 +1,26 @@
+{
+    "id": "08AD0862",
+    "path": "~/School Files/Spring 2023/STAT 6340.001/MiniProjects/MiniProject6/InitScript.R",
+    "project_path": "InitScript.R",
+    "type": "r_source",
+    "hash": "2032355075",
+    "contents": "",
+    "dirty": false,
+    "created": 1682736962337.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "3,0",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1682808053,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1682808053641,
+    "read_only": false,
+    "read_only_alternatives": []
+}

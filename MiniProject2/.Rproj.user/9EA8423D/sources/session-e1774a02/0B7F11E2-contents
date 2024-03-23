@@ -1,0 +1,86 @@
+---
+title: "Report"
+author: "Raheel Ahmed"
+date: "2023-02-21"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\newpage
+# Question 1
+
+### a. Exploratory analysis of data
+From examining the data, we notice that there are 7 features: cancervol, weight, age, benpros, vesinv, capspen, and gleason with one response, psa. We also know that there are 97 observations in our dataset, which actually appears to be a small number to try and develop a reasonable model with. For our two qualitative measures, vesinv and gleason, we can see via summary() that there are more people without seminal vesicle invasion than with and that there is a reasonable mix of people with varying gleason scores, though 7, the middle score, does appear most frequently. If we look at the histogram of ages in the dataset, we can see that mostly people from 50 to 70+ are affected with the disease. Also, examination of the correlations between all the variables shows that age correlates with hyperplasia which is indicative of prostatic abnormality and cancer volume is proportional to the outgrowth of the cancer itself, which in turn is correlated to a higher psa level.
+
+### b. Is PSA appropriate as a response variable?
+PSA is not appropriate as a response variable. Looking at the histogram of psa prior to the transformation shows us that it is skewed heavily to the left, not fitting the traits of a normal distribution at all. Upon using a natural log transformation, we see that the histogram is much more like a normal distribution's. 
+
+### c. Fit a simple linear regression model to predict PSA for each feature.
+I ran lm or glm for each feature in relation to the psa. I found that of the 7 features, only 4 -- cancervol, vesinv, capspen, and gleason -- were linearly related to the psa. The plots showing their relationship, and confirming the results of the lm(), are shown below:
+
+![Linearity-plots]("LinearityPlot.png"){width="50%"}
+
+### d. Fit a multiple regression model to predict PSA for each feature. For which predictors can we reject the null hypothesis?
+The multiple regression model found a similar set of features that were linearly related to the psa. This time, it was cancervol, benpros, vesinv=1, and gleason=8, which are the features that we can reject the null hypothesis for. Again, weight, age, and other values of gleason were found to not be statistically significant in terms of a linear relationship to psa. However, this model finds benpros to be linearly related to psa and capspen to not be so (by quite a significant margin).
+
+### e. Build a “reasonably good” multiple regression model for these data.
+I decided to use all the features found to be linearly related to psa, but I excluded capspen as it did not seem statistically significant when other predictors were involved and I excluded benpros as it did not have statistical significance to the psa response until other predictors were accounted for.
+
+### f. What is the equation of the final model?
+The equation my final model returned was $psa = 1.60467 + 0.05875*cancervol + 0.6259312*vesinv1 + 0.3543990*gleason7 + 0.7863444*gleason8$, but since vesinv and gleason are qualitative measures I have derived the following equations for all possible cases of vesinv and gleason.
+$$
+psa = 
+\begin{cases}
+1.60467 + 0.05875*cancervol,\quad \text{with} \quad vesinv=0, gleason=6\\
+1.95907 + 0.05875*cancervol,\quad \text{with} \quad vesinv=0, gleason=7\\
+2.39102 + 0.05875*cancervol,\quad \text{with} \quad vesinv=0, gleason=8\\
+2.230602 + 0.05875*cancervol,\quad \text{with} \quad vesinv=1, gleason=6\\
+2.58500 + 0.05875*cancervol,\quad \text{with} \quad vesinv=1, gleason=7\\
+3.01695 + 0.05875*cancervol,\quad \text{with} \quad vesinv=1, gleason=8\\
+\end{cases}
+$$
+
+### g. Use the final model to predict the PSA level for a patient whose quantitative predictors are at the sample means of the variables and qualitative predictors (if any) are at the most frequent category.
+We find via mean() that the average cancervol is approximately 6.9987, the most common vesinv value is 0, and the most common gleason score is 7. We can use predict() with our final model and this new entry as our parameters to find that the predicted psa value for such a person is 2.370213. To confirm, we can try $psa = 1.95907 + 0.05875*(6.9987) = 2.370244$, which gets us approximately the correct answer.
+
+\newpage
+# Question 2
+### a. 
+### b. 
+\newpage
+# Question 3
+Consider a classification problem with K classes. The Bayes decision rule assigns an observation to the class for which P (Y = k|x), or
+equivalently, its log odds relative to class K as baseline, i.e., P (Y = k|x)/P (Y = K|x), is maximum. \\
+
+Note, that we assume that $X \sim \mathcal{N}_K(\mu, \sigma^2)$ with each class having a specified mean, $u_k$, specified proportion, $\pi_k$, and shared covariance matrix, $\Sigma$.
+### a1. Assuming that the model parameters are known, verify that the log odds can be expressed as follows for LDA.
+\begin{align}
+& \log\left(\frac{P(Y=k \mid X=x)}{P(Y=K \mid X=x)}\right)= \\
+& \log\left(\frac{\pi_kf_k(x)}{\pi_Kf_K(x)}\right)= \\
+& \log\left(\frac{\pi_k \exp(-\frac{1}{2}(x-\mu_k)^T\Sigma^{-1}(x-\mu_k))}{\pi_K \exp(-\frac{1}{2}(x-\mu_K)^T\Sigma^{-1}(x-\mu_K))}\right)= \\
+& \log\left(\frac{\pi_k}{\pi_K}\right) + \log\left(\frac{\exp(-\frac{1}{2}(x-\mu_k)^T\Sigma^{-1}(x-\mu_k))}{ \exp(-\frac{1}{2}(x-\mu_K)^T\Sigma^{-1}(x-\mu_K))}\right)= \\
+& \log\left(\frac{\pi_k}{\pi_K}\right) + \log\left(\exp\left(-\frac{1}{2}(x-\mu_k)^T\Sigma^{-1}(x-\mu_k)\right)\right) - \log\left( \exp\left(-\frac{1}{2}(x-\mu_K)^T\Sigma^{-1}(x-\mu_K)\right)\right)= \\
+& \log\left(\frac{\pi_k}{\pi_K}\right) + \left[-\frac{1}{2}(x-\mu_k)^T\Sigma^{-1}(x-\mu_k)\right] - \left[-\frac{1}{2}(x-\mu_K)^T\Sigma^{-1}(x-\mu_K)\right]= \\
+& \log\left(\frac{\pi_k}{\pi_K}\right) - \left[\frac{1}{2}(x-\mu_k)^T\Sigma^{-1}(x-\mu_k)\right] + \left[\frac{1}{2}(x-\mu_K)^T\Sigma^{-1}(x-\mu_K)\right]= \\
+& \log\left(\frac{\pi_k}{\pi_K}\right) - \frac{1}{2}(\mu_k+\mu_K)^T\Sigma^{-1}(\mu_k-\mu_K) + x^T\Sigma^{-1}(\mu_k-\mu_K)= \\
+& a_k + \sum_{j=1}^{p}b_{kj}x_j
+\end{align}
+
+### a2. Assuming that the model parameters are known, verify that the log odds can be expressed as follows for Naive Bayes.
+\begin{align}
+& \log\left(\frac{P(Y=k \mid X=x)}{P(Y=K \mid X=x)}\right)= \\
+& \log\left(\frac{\pi_kf_k(x)}{\pi_Kf_K(x)}\right)= \\
+& \log\left(\frac{\pi_k \prod_{j=1}^p f_{kj}(x_{j})}{\pi_K \prod_{j=1}^p f_{Kj}(x_{j})}\right)= \\
+& \log\left(\frac{\pi_k}{\pi_K}\right) + \log\left(\frac{\prod_{j=1}^p f_{kj}(x_{j})}{\prod_{j=1}^p f_{Kj}(x_{j})}\right)= \\
+& \log\left(\frac{\pi_k}{\pi_K}\right) + \sum_{j=1}^p\log\left(\frac{ f_{kj}(x_{j})}{f_{Kj}(x_{j})}\right)= \\
+& a_k + \sum_{j=1}^pg_{kj}(x_j)=
+\end{align}
+
+### b. Under what assumptions LDA is a special case of naive Bayes? Justify your answer.
+LDA, being a classifier with a linear boundary, inherently is a special case of naive Bayes where $g_{kj}(x_j) = b_{kj}x_j$. The assumptions that have to be made, however, is that all features are normally distributed, one covariance matrix is common to all classes, and the features are independent of one another.
+
+### c. Under what assumptions naive Bayes is a special case of LDA? Justify your answer.
+From the previous portions of this question, we can compare LDA to naive Bayes and see that for Naive Bayes to be a special case of LDA, we should model elements of $g_{kj}(x_j)$ so that $g_{kj}(x_j)$ is equal to $b_{kj}x_j$. To do this, we can model $f_{kj}x_j$ with a normal distribution, $\mathcal{N}(\mu_{kj}, \sigma_j^2)$, which will result in $g_{kj}(x_j) = \frac{\mu_{kj}-\mu_{Kj}}{\sigma_j^2}$. In this case, $g_{kj}(x_j) = b_{kj}x_j$ and $\Sigma$ is a diagonal covariance matrix of $\sigma$'s corresponding to each 1-dimensional from 1 to p. We can see this covariance matrix is the same for regardless of class and the distributions are normal; therefore, assuming sample measurements are independent, we can say that naive Bayes is a special case of LDA. 

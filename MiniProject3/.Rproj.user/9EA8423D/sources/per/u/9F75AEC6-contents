@@ -1,0 +1,11 @@
+library(boot)
+library(e1071)
+library(pROC)
+library(class)
+library(MASS)
+
+
+fit1 <- lm(mpg ~ . - name, data=Auto)
+summary(fit1)
+fit2 <- lm(mpg ~ . - name - acceleration - cylinders, data=Auto)
+anova(fit1, fit2)

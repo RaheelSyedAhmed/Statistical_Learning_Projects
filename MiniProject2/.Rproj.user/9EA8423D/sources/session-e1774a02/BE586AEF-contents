@@ -1,0 +1,97 @@
+# Read in admission data
+admit_data <- read.csv("admission.csv")
+# Appropriately standardize the GPA and GMAT scores
+admit_data[,1:2] <- scale(admit_data[,1:2])
+
+# Form test data from the last 5 observations in each group
+test_data <- rbind(
+  tail(split(admit_data, admit_data$Group)$`1`, 5),
+  tail(split(admit_data, admit_data$Group)$`2`, 5),
+  tail(split(admit_data, admit_data$Group)$`3`, 5)
+)
+
+# Take the train data as the rest of the observations
+train_data <- admit_data[-as.numeric(rownames(test_data)), ]
+
+# Partition features and responses
+train_X <- train_data[,1:2]
+train_y <- train_data[,3]
+
+test_X <- test_data[, 1:2]
+test_y <- test_data[, 3]
+
+# Count the number of observations
+observation_count <- nrow(admit_data)
+
+# Display frequency of GPA and GMAT data
+par(mfrow=c(1,2))
+hist(admit_data$GPA)
+hist(admit_data$GMAT)
+
+#Display frequency of response
+hist(admit_data$Group)
+
+par(mfrow=c(1,1))
+plot(admit_data$GPA, admit_data$Group)  
+#GPA appears to correlate with acceptance
+plot(admit_data$GMAT, admit_data$Group)
+# Students with the highest GMAT scores tended to be accepted, 
+# mid range students had a mix of acceptance rates
+# low scoring students often did not get accepted or were borderline
+
+# Form grid for future decision boundary making
+n_grid <- 50
+gpa_grid <- seq(f=min(train_X$GPA), t=max(train_X$GPA), l=n_grid)
+gmat_grid <- seq(f=min(train_X$GMAT), t=max(train_X$GMAT), l=n_grid)
+grid <- expand.grid(gpa_grid, gmat_grid)
+colnames(grid) <- c("GPA", "GMAT")
+
+
+#Part b
+library(MASS)
+admit_lda <- lda(Group ~ GPA + GMAT, data=admit_data, subset=rownames(train_data))
+coef(admit_lda)
+predict_lda_grid <- predict(admit_lda, grid)
+lda_probs <- matrix(predict_lda_grid$posterior, nrow=n_grid, ncol=n_grid)
+
+
+#Part e
+library(class)
+
+#Test out multiple knn classifiers
+ks <- c(seq(1,30, by=1), seq(35,150, by=5))
+nks <- length(ks)
+err_train <- numeric(length=nks)
+err_test <- numeric(length=nks)
+names(err_train) <- names(err_test) <- ks
+
+for(i in seq(along=ks)){
+  knn_train <- knn(train_X, train_X, train_y, k=ks[i], prob=TRUE)
+  cfm <- table(knn_train, train_y) 
+  train_acc <- (cfm[1,1] + cfm[2,2] + cfm[3,3]) / sum(cfm)
+  
+  knn_test <- knn(train_X, test_X, train_y, k=ks[i], prob=TRUE)
+  cfm <- table(knn_test, test_y) 
+  test_acc <- (cfm[1,1] + cfm[2,2] + cfm[3,3]) / sum(cfm)
+  
+  err_train[i] <- 1 - train_acc
+  err_test[i] <- 1 - test_acc
+}
+
+plot(ks, err_train, xlab="K", ylab="Error rate", type = "b", col="green", pch=20, ylim=c(0,1))
+lines(ks, err_test, type="b", col="red", pch=20)
+
+optim_find <- data.frame(ks, err_train, err_test)
+optim_find[optim_find$err_test == min(optim_find$err_test), ]
+# 1 and 55 are both found to be optimal
+
+
+optimal_knn <- knn(train_X, grid, train_y, k=55, prob=TRUE)
+optimal_probs <- attr(optimal_knn, "prob")
+optimal_probs <- matrix(optimal_probs, n_grid, n_grid)
+all_boundary_subjects <- which(optimal_probs <= 0.37)
+boundary_points <- grid[all_boundary_subjects,]
+
+
+plot(train_X, col= ifelse(train_y == 1, "green", ifelse(train_y == 2, "red", "blue")))
+abline(lm(boundary_points$GMAT ~ boundary_points$GPA))
